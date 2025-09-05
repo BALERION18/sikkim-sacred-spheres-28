@@ -216,3 +216,5 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     </Dialog>
   );
 };
+
+export default PaymentModal;

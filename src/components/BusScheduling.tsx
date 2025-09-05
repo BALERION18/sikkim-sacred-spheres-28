@@ -11,8 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { PaymentModal } from "@/components/PaymentModal";
-import { BookingConfirmation } from "@/components/BookingConfirmation";
+import PaymentModal from "@/components/PaymentModal";
+import BookingConfirmation from "@/components/BookingConfirmation";
 
 interface BusRoute {
   id: string;

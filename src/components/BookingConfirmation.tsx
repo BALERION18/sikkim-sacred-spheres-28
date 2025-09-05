@@ -220,3 +220,5 @@ Thank you for choosing Sikkim Tourism!
     </Dialog>
   );
 };
+
+export default BookingConfirmation;
