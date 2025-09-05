@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, MapPin, Camera, Archive, Calendar, Headphones, LogIn, LogOut, User } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Menu, MapPin, Camera, Archive, Calendar, Headphones, LogIn, LogOut, User, PenTool } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import gompixLogo from "/lovable-uploads/34f6e409-143f-4b09-8ac6-da046805dbe2.png";
 import { BusScheduling } from "@/components/BusScheduling";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { useToast } from "@/hooks/use-toast";
 
 interface NavigationProps {
   activeSection: string;
@@ -15,7 +17,9 @@ interface NavigationProps {
 
 export const Navigation = ({ activeSection, setActiveSection }: NavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const navigationItems = [
@@ -37,6 +41,15 @@ export const Navigation = ({ activeSection, setActiveSection }: NavigationProps)
       signOut();
     } else {
       navigate("/auth");
+    }
+    setIsOpen(false);
+  };
+
+  const handleBlogCreation = () => {
+    if (user) {
+      navigate("/blog/create");
+    } else {
+      setShowLoginDialog(true);
     }
     setIsOpen(false);
   };
@@ -75,11 +88,25 @@ export const Navigation = ({ activeSection, setActiveSection }: NavigationProps)
           {/* Bus Scheduling */}
           <BusScheduling />
           
+          {/* Write Blog Button */}
+          <Button
+            onClick={handleBlogCreation}
+            className={`flex items-center space-x-2 ml-4 ${
+              user 
+                ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                : "border-primary/50 hover:bg-primary/10 text-primary"
+            }`}
+            variant={user ? "default" : "outline"}
+          >
+            <PenTool className="w-4 h-4" />
+            <span>Write Blog</span>
+          </Button>
+          
           {/* Auth Button */}
           <Button
             variant="outline"
             onClick={handleAuthAction}
-            className="flex items-center space-x-2 ml-4 border-primary/20 hover:bg-primary/10 text-foreground"
+            className="flex items-center space-x-2 border-primary/20 hover:bg-primary/10 text-foreground"
           >
             {user ? (
               <>
@@ -135,6 +162,22 @@ export const Navigation = ({ activeSection, setActiveSection }: NavigationProps)
                 <BusScheduling />
               </div>
               
+              {/* Mobile Write Blog Button */}
+              <div className="border-t border-border pt-4 mt-2">
+                <Button
+                  onClick={handleBlogCreation}
+                  className={`flex items-center space-x-2 justify-start w-full ${
+                    user 
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                      : "border-primary/50 hover:bg-primary/10 text-primary"
+                  }`}
+                  variant={user ? "default" : "outline"}
+                >
+                  <PenTool className="w-4 h-4" />
+                  <span>Write Blog</span>
+                </Button>
+              </div>
+              
               {/* Mobile Auth Button */}
               <div className="border-t border-border pt-4 mt-2">
                 <Button
@@ -170,6 +213,36 @@ export const Navigation = ({ activeSection, setActiveSection }: NavigationProps)
           </SheetContent>
         </Sheet>
       </div>
+
+      {/* Login Dialog */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign in Required</DialogTitle>
+            <DialogDescription>
+              Please sign in to your account to create blog posts and share your experiences.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button 
+              onClick={() => {
+                setShowLoginDialog(false);
+                navigate("/auth");
+              }}
+              className="w-full"
+            >
+              Sign In / Register
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowLoginDialog(false)}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 };

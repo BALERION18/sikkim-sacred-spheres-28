@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import AdminPanel from "./pages/AdminPanel";
 import GuidePanel from "./pages/GuidePanel";
 import NotFound from "./pages/NotFound";
+import BlogEditor from "./components/BlogEditor";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -24,8 +26,23 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/guide" element={<GuidePanel />} />
+            <Route path="/blog/create" element={<BlogEditor />} />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPanel />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/guide" 
+              element={
+                <ProtectedRoute requiredRole="guide">
+                  <GuidePanel />
+                </ProtectedRoute>
+              } 
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
