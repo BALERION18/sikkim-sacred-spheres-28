@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar, Eye, Heart, MessageCircle, Search, Tag, User, Loader2 } from 'lucide-react';
+import { Calendar, Eye, Heart, MessageCircle, Search, Tag, User, Loader2, Trash2 } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 interface BlogData {
   id: string;
   title: string;
@@ -27,7 +28,9 @@ const BlogSection = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [blogs, setBlogs] = useState<BlogData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingBlogId, setDeletingBlogId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user, userRole } = useAuth();
 
   const fetchBlogs = async () => {
     try {
@@ -50,6 +53,54 @@ const BlogSection = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteBlog = async (blogId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to delete blogs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Confirm deletion
+    if (!confirm("Are you sure you want to delete this blog? This action cannot be undone.")) {
+      return;
+    }
+
+    setDeletingBlogId(blogId);
+    
+    try {
+      const { error } = await supabase
+        .from('blogs')
+        .delete()
+        .eq('id', blogId);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setBlogs(blogs.filter(blog => blog.id !== blogId));
+      
+      toast({
+        title: "Blog Deleted",
+        description: "The blog post has been successfully deleted",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete blog post",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingBlogId(null);
+    }
+  };
+
+  const canDeleteBlog = (blog: BlogData) => {
+    if (!user) return false;
+    return blog.user_id === user.id || userRole === 'admin';
   };
 
   useEffect(() => {
@@ -234,6 +285,28 @@ const BlogSection = () => {
                     <span>{Math.floor((blog.views_count || 0) * 0.05)}</span>
                   </div>
                 </div>
+                
+                <div className="flex items-center space-x-2">
+                  {canDeleteBlog(blog) && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteBlog(blog.id);
+                      }}
+                      disabled={deletingBlogId === blog.id}
+                      className="flex items-center space-x-1"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      {deletingBlogId === blog.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <span>Delete</span>
+                      )}
+                    </Button>
+                  )}
+                  
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button size="sm" onClick={() => handleView(blog)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -306,6 +379,7 @@ const BlogSection = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
             </CardContent>
           </Card>)}
