@@ -65,6 +65,42 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          amount: number
+          booking_type: string
+          created_at: string
+          details: Json
+          id: string
+          payment_id: string | null
+          payment_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          booking_type: string
+          created_at?: string
+          details: Json
+          id?: string
+          payment_id?: string | null
+          payment_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          booking_type?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          payment_id?: string | null
+          payment_status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

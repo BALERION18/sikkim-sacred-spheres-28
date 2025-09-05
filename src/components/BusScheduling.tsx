@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { PaymentModal } from "@/components/PaymentModal";
+import { BookingConfirmation } from "@/components/BookingConfirmation";
 
 interface BusRoute {
   id: string;
@@ -57,6 +59,9 @@ export const BusScheduling = () => {
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [bookingType, setBookingType] = useState<'bus' | 'hotel'>('bus');
   const [showBooking, setShowBooking] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -213,6 +218,15 @@ export const BusScheduling = () => {
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to continue with your booking.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (bookingType === 'bus') {
       if (!selectedRoute || !bookingForm.travel_date) {
         toast({
@@ -221,50 +235,6 @@ export const BusScheduling = () => {
           variant: "destructive",
         });
         return;
-      }
-
-      try {
-        const totalAmount = selectedRoute.price * bookingForm.seats_booked;
-
-        // Simulate booking creation (in real app, this would save to database)
-        console.log('Bus Booking created:', {
-          user_id: user?.id || null,
-          route_id: selectedRoute.id,
-          passenger_name: bookingForm.passenger_name,
-          passenger_email: bookingForm.passenger_email,
-          passenger_phone: bookingForm.passenger_phone,
-          travel_date: format(bookingForm.travel_date, 'yyyy-MM-dd'),
-          seats_booked: bookingForm.seats_booked,
-          total_amount: totalAmount,
-          booking_status: 'pending',
-          payment_status: 'pending',
-        });
-
-        toast({
-          title: "Bus Booking Confirmed!",
-          description: `Your booking for ${selectedRoute.route_name} has been created. Total: ₹${totalAmount}`,
-        });
-
-        // Reset form
-        setBookingForm({
-          passenger_name: '',
-          passenger_email: user?.email || '',
-          passenger_phone: '',
-          seats_booked: 1,
-          travel_date: undefined,
-          check_in_date: undefined,
-          check_out_date: undefined,
-          rooms_booked: 1,
-        });
-        setShowBooking(false);
-        setSelectedRoute(null);
-      } catch (error) {
-        console.error('Error creating booking:', error);
-        toast({
-          title: "Booking Failed",
-          description: "Failed to create booking. Please try again.",
-          variant: "destructive",
-        });
       }
     } else {
       if (!selectedHotel || !bookingForm.check_in_date || !bookingForm.check_out_date) {
@@ -275,53 +245,101 @@ export const BusScheduling = () => {
         });
         return;
       }
+    }
 
-      try {
-        const nights = Math.ceil((bookingForm.check_out_date.getTime() - bookingForm.check_in_date.getTime()) / (1000 * 60 * 60 * 24));
-        const totalAmount = selectedHotel.price_per_night * nights * (bookingForm.rooms_booked || 1);
+    // Show payment modal instead of confirming booking
+    setShowPaymentModal(true);
+  };
 
-        // Simulate hotel booking creation
-        console.log('Hotel Booking created:', {
-          user_id: user?.id || null,
-          hotel_id: selectedHotel.id,
-          guest_name: bookingForm.passenger_name,
-          guest_email: bookingForm.passenger_email,
-          guest_phone: bookingForm.passenger_phone,
-          check_in_date: format(bookingForm.check_in_date, 'yyyy-MM-dd'),
-          check_out_date: format(bookingForm.check_out_date, 'yyyy-MM-dd'),
-          rooms_booked: bookingForm.rooms_booked,
+  const handlePaymentSuccess = async (paymentId: string) => {
+    try {
+      let bookingDetails, totalAmount;
+
+      if (bookingType === 'bus' && selectedRoute) {
+        totalAmount = selectedRoute.price * bookingForm.seats_booked;
+        bookingDetails = {
+          type: 'bus',
+          name: selectedRoute.route_name,
+          from: selectedRoute.origin,
+          to: selectedRoute.destination,
+          date: bookingForm.travel_date!.toISOString(),
+          time: formatTime(selectedRoute.departure_time),
+          passengers: bookingForm.seats_booked,
+          seats: Array.from({ length: bookingForm.seats_booked }, (_, i) => `${i + 1}`),
+          passengerName: bookingForm.passenger_name,
+          email: bookingForm.passenger_email,
+          phone: bookingForm.passenger_phone,
+        };
+      } else if (selectedHotel) {
+        const nights = Math.ceil((bookingForm.check_out_date!.getTime() - bookingForm.check_in_date!.getTime()) / (1000 * 60 * 60 * 24));
+        totalAmount = selectedHotel.price_per_night * nights * (bookingForm.rooms_booked || 1);
+        bookingDetails = {
+          type: 'hotel',
+          name: selectedHotel.name,
+          location: selectedHotel.location,
+          checkIn: bookingForm.check_in_date!.toISOString(),
+          checkOut: bookingForm.check_out_date!.toISOString(),
+          guests: bookingForm.rooms_booked || 1,
+          rooms: bookingForm.rooms_booked || 1,
           nights: nights,
-          total_amount: totalAmount,
-          booking_status: 'pending',
-          payment_status: 'pending',
-        });
+          passengerName: bookingForm.passenger_name,
+          email: bookingForm.passenger_email,
+          phone: bookingForm.passenger_phone,
+        };
+      } else {
+        return;
+      }
 
-        toast({
-          title: "Hotel Booking Confirmed!",
-          description: `Your booking for ${selectedHotel.name} has been created. Total: ₹${totalAmount} for ${nights} night${nights > 1 ? 's' : ''}`,
-        });
+      // Save booking to database
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert({
+          user_id: user.id,
+          booking_type: bookingType,
+          details: bookingDetails,
+          amount: totalAmount,
+          payment_status: 'success',
+          payment_id: paymentId,
+        })
+        .select()
+        .single();
 
-        // Reset form
-        setBookingForm({
-          passenger_name: '',
-          passenger_email: user?.email || '',
-          passenger_phone: '',
-          seats_booked: 1,
-          travel_date: undefined,
-          check_in_date: undefined,
-          check_out_date: undefined,
-          rooms_booked: 1,
-        });
-        setShowBooking(false);
-        setSelectedHotel(null);
-      } catch (error) {
-        console.error('Error creating hotel booking:', error);
+      if (error) {
+        console.error('Booking save error:', error);
         toast({
-          title: "Booking Failed",
-          description: "Failed to create hotel booking. Please try again.",
+          title: "Booking Error",
+          description: "Failed to save booking. Please contact support.",
           variant: "destructive",
         });
+        return;
       }
+
+      setConfirmedBooking(data);
+      setShowPaymentModal(false);
+      setShowConfirmation(true);
+      
+      // Reset form
+      setShowBooking(false);
+      setSelectedRoute(null);
+      setSelectedHotel(null);
+      setBookingForm({
+        passenger_name: '',
+        passenger_email: user?.email || '',
+        passenger_phone: '',
+        seats_booked: 1,
+        travel_date: undefined,
+        check_in_date: undefined,
+        check_out_date: undefined,
+        rooms_booked: 1,
+      });
+
+    } catch (error) {
+      console.error('Payment success handler error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -754,6 +772,36 @@ export const BusScheduling = () => {
           </div>
         )}
       </DialogContent>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={bookingType === 'bus' && selectedRoute 
+          ? selectedRoute.price * bookingForm.seats_booked
+          : bookingType === 'hotel' && selectedHotel && bookingForm.check_in_date && bookingForm.check_out_date
+          ? selectedHotel.price_per_night * (bookingForm.rooms_booked || 1) * 
+            Math.ceil((bookingForm.check_out_date.getTime() - bookingForm.check_in_date.getTime()) / (1000 * 60 * 60 * 24))
+          : 0
+        }
+        bookingDetails={bookingType === 'bus' && selectedRoute ? {
+          type: 'bus',
+          name: selectedRoute.route_name,
+        } : bookingType === 'hotel' && selectedHotel ? {
+          type: 'hotel',
+          name: selectedHotel.name,
+        } : { type: 'unknown', name: 'Unknown' }}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      {/* Booking Confirmation */}
+      {confirmedBooking && (
+        <BookingConfirmation
+          isOpen={showConfirmation}
+          onClose={() => setShowConfirmation(false)}
+          booking={confirmedBooking}
+        />
+      )}
     </Dialog>
   );
 };
