@@ -83,10 +83,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    if (!error && data.user) {
+      // Fetch user role after successful login
+      setTimeout(() => {
+        fetchUserRole(data.user.id);
+      }, 100);
+    }
+    
     return { error };
   };
 

@@ -36,15 +36,28 @@ const Auth = () => {
 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { user, signInWithEmail, signUpWithEmail, signInWithProvider } = useAuth();
+  const { user, userRole, signInWithEmail, signUpWithEmail, signInWithProvider } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Redirect authenticated users to their dashboards
   useEffect(() => {
-    if (user) {
-      navigate("/");
+    if (user && userRole) {
+      switch (userRole) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'guide':
+          navigate('/guide/dashboard');
+          break;
+        case 'user':
+          navigate('/user/home');
+          break;
+        default:
+          navigate('/');
+          break;
+      }
     }
-  }, [user, navigate]);
+  }, [user, userRole, navigate]);
 
   const handleUserAuth = async (e: React.FormEvent) => {
     e.preventDefault();

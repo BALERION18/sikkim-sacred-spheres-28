@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,27 +15,58 @@ import {
   MapPin,
   Calendar,
   LogOut,
-  Plus,
-  Edit,
-  Trash2,
-  Eye
+  Plus
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AdminUserManager } from "@/components/AdminUserManager";
+import { AdminBlogManager } from "@/components/AdminBlogManager";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminPanel = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeUsers, setActiveUsers] = useState(247);
-  const [totalBlogs, setTotalBlogs] = useState(89);
-  const [pendingApprovals, setPendingApprovals] = useState(12);
+  const [stats, setStats] = useState({
+    activeUsers: 0,
+    totalBlogs: 0,
+    pendingApprovals: 0
+  });
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!user) {
       navigate("/auth");
+      return;
     }
+    fetchStats();
   }, [user, navigate]);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch user count
+      const { count: userCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch blog count
+      const { count: blogCount } = await supabase
+        .from('blogs')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch pending KYC approvals
+      const { count: pendingCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('kyc_status', 'pending');
+
+      setStats({
+        activeUsers: userCount || 0,
+        totalBlogs: blogCount || 0,
+        pendingApprovals: pendingCount || 0
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -94,7 +124,7 @@ const AdminPanel = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Users</p>
-                  <p className="text-3xl font-bold text-primary">{activeUsers}</p>
+                  <p className="text-3xl font-bold text-primary">{stats.activeUsers}</p>
                 </div>
                 <Users className="w-8 h-8 text-primary" />
               </div>
@@ -106,7 +136,7 @@ const AdminPanel = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Published Blogs</p>
-                  <p className="text-3xl font-bold text-accent">{totalBlogs}</p>
+                  <p className="text-3xl font-bold text-accent">{stats.totalBlogs}</p>
                 </div>
                 <BookOpen className="w-8 h-8 text-accent" />
               </div>
@@ -118,7 +148,7 @@ const AdminPanel = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Approvals</p>
-                  <p className="text-3xl font-bold text-destructive">{pendingApprovals}</p>
+                  <p className="text-3xl font-bold text-destructive">{stats.pendingApprovals}</p>
                 </div>
                 <Calendar className="w-8 h-8 text-destructive" />
               </div>
@@ -137,61 +167,12 @@ const AdminPanel = () => {
 
           {/* Users Management */}
           <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>User Management</span>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add User
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>User management functionality requires Supabase integration</p>
-                  <p className="text-sm mt-2">Connect to Supabase to manage users, roles, and permissions</p>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminUserManager />
           </TabsContent>
 
           {/* Content Management */}
           <TabsContent value="content">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Blog Management</span>
-                    <Button size="sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Blog
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <p>Blog management functionality requires Supabase integration</p>
-                    <p className="text-sm mt-2">Connect to Supabase to create, edit, and manage blog posts</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Media Management</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Camera className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <p>Media management functionality requires Supabase integration</p>
-                    <p className="text-sm mt-2">Connect to Supabase to upload and manage images and videos</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <AdminBlogManager />
           </TabsContent>
 
           {/* Analytics */}

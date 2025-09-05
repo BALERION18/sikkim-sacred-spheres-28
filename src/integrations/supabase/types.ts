@@ -22,6 +22,8 @@ export type Database = {
           featured_image: string | null
           id: string
           images: string[] | null
+          media_url: string[] | null
+          role: string | null
           status: string | null
           tags: string[] | null
           title: string
@@ -36,6 +38,8 @@ export type Database = {
           featured_image?: string | null
           id?: string
           images?: string[] | null
+          media_url?: string[] | null
+          role?: string | null
           status?: string | null
           tags?: string[] | null
           title: string
@@ -50,6 +54,8 @@ export type Database = {
           featured_image?: string | null
           id?: string
           images?: string[] | null
+          media_url?: string[] | null
+          role?: string | null
           status?: string | null
           tags?: string[] | null
           title?: string

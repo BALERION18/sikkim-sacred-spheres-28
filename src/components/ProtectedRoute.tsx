@@ -28,13 +28,13 @@ export const ProtectedRoute = ({
         // Redirect based on role
         switch (userRole) {
           case 'admin':
-            navigate('/admin');
+            navigate('/admin/dashboard');
             break;
           case 'guide':
-            navigate('/guide');
+            navigate('/guide/dashboard');
             break;
           default:
-            navigate('/');
+            navigate('/user/home');
             break;
         }
       }

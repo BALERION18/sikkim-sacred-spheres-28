@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AdminPanel from "./pages/AdminPanel";
 import GuidePanel from "./pages/GuidePanel";
+import UserDashboard from "./pages/UserDashboard";
 import NotFound from "./pages/NotFound";
 import BlogEditor from "./components/BlogEditor";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -26,9 +27,16 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/blog/create" element={<BlogEditor />} />
             <Route 
-              path="/admin" 
+              path="/blog/create" 
+              element={
+                <ProtectedRoute>
+                  <BlogEditor />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/dashboard" 
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminPanel />
@@ -36,10 +44,18 @@ const App = () => (
               } 
             />
             <Route 
-              path="/guide" 
+              path="/guide/dashboard" 
               element={
                 <ProtectedRoute requiredRole="guide">
                   <GuidePanel />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/user/home" 
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <UserDashboard />
                 </ProtectedRoute>
               } 
             />
