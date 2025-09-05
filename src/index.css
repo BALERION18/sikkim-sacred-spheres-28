@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Enhanced Sikkim Heritage Color Palette - High Contrast */
+    --background: 220 25% 95%;
+    --foreground: 220 30% 8%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 220 30% 12%;
+
+    --popover: 0 0% 98%;
+    --popover-foreground: 220 30% 12%;
+
+    /* Saffron Primary (Buddhist Robes) - Enhanced contrast */
+    --primary: 35 95% 55%;
+    --primary-foreground: 220 30% 8%;
+    --primary-glow: 35 85% 65%;
+
+    /* Mountain Blue Secondary - Enhanced contrast */
+    --secondary: 220 80% 20%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Enhanced Muted colors for better visibility */
+    --muted: 210 40% 92%;
+    --muted-foreground: 220 30% 35%;
+
+    /* Forest Green Accent - Enhanced contrast */
+    --accent: 140 70% 30%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 25% 88%;
+    --input: 220 25% 88%;
+    --ring: 35 95% 58%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(35 95% 58%), hsl(220 70% 45%));
+    --gradient-mountain: linear-gradient(180deg, hsl(220 70% 25%), hsl(200 80% 40%));
+    --gradient-sunrise: linear-gradient(90deg, hsl(35 95% 58%), hsl(45 85% 65%), hsl(220 70% 45%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.9), hsl(210 40% 98% / 0.8));
+
+    /* Shadows */
+    --shadow-monastery: 0 20px 60px -10px hsl(220 70% 25% / 0.3);
+    --shadow-heritage: 0 10px 40px -15px hsl(35 95% 58% / 0.4);
+    --shadow-glow: 0 0 30px hsl(35 95% 58% / 0.3);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Enhanced Dark Mode - High Contrast */
+    --background: 220 30% 6%;
+    --foreground: 210 40% 95%;
+
+    --card: 220 25% 8%;
+    --card-foreground: 210 40% 92%;
+
+    --popover: 220 25% 8%;
+    --popover-foreground: 210 40% 92%;
+
+    --primary: 35 95% 65%;
+    --primary-foreground: 220 30% 8%;
+
+    --secondary: 220 70% 25%;
+    --secondary-foreground: 210 40% 95%;
+
+    --muted: 220 25% 12%;
+    --muted-foreground: 215 20.2% 70%;
+
+    --accent: 140 70% 35%;
+    --accent-foreground: 210 40% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .glass-morphism {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+    border-radius: 12px;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 1s ease-out;
+  }
+}
+
+@layer utilities {
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Enhanced image loading and performance optimizations */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+
+  /* Preload hints for critical images */
+  img[loading="eager"] {
+    fetchpriority: high;
+    decoding: async;
+  }
+
+  img[loading="lazy"] {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 400px;
+  }
+
+  .lazy-load {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+  }
+
+  .lazy-load.loaded {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Image performance optimizations */
+  img[loading="lazy"] {
+    content-visibility: auto;
+  }
+
+  /* Preload critical images */
+  .hero-image, .carousel-image {
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    transform: translateZ(0);
+  }
+
+  /* Optimize background images */
+  .bg-cover,
+  .bg-center {
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  /* Critical image preloading */
+  .preload-critical::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Map performance optimizations */
+  .gm-style img {
+    max-width: none !important;
+    transform: translateZ(0);
+  }
+  
+  .gm-style-cc {
+    display: none;
+  }
+}

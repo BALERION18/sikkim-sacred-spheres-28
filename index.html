@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monastery360 - Digital Heritage Platform for Sikkim's Monasteries</title>
+    <meta name="description" content="Explore 200+ monasteries in Sikkim through virtual tours, digital archives, and cultural experiences. Discover Buddhist heritage through immersive technology." />
+    <meta name="author" content="Monastery360" />
+    <meta name="keywords" content="Sikkim monasteries, Buddhist heritage, virtual tours, digital archives, cultural tourism, Himalayas" />
+
+    <meta property="og:title" content="Monastery360 - Digital Heritage Platform for Sikkim's Monasteries" />
+    <meta property="og:description" content="Explore 200+ monasteries in Sikkim through virtual tours, digital archives, and cultural experiences." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@monastery360" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Monastery360">
+    <link rel="apple-touch-icon" href="/lovable-uploads/monastery-1.jpg">
+    <meta name="msapplication-TileColor" content="#1a1a2e">
+    <meta name="theme-color" content="#ff6b35">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" as="image" href="/src/assets/sikkim-monasteries-hero.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/src/assets/monastery-1.jpg" fetchpriority="high">
+    <link rel="preconnect" href="https://maps.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // New content is available, show update notification
+                      if (confirm('New version available! Refresh to update?')) {
+                        window.location.reload();
+                      }
+                    }
+                  });
+                }
+              });
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+
+      // Enhanced PWA Install Prompt with debugging
+      let deferredPrompt;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('beforeinstallprompt event fired');
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show custom install button if needed
+        const installButton = document.createElement('button');
+        installButton.textContent = '📱 Install App';
+        installButton.style.cssText = `
+          position: fixed; 
+          bottom: 20px; 
+          right: 20px; 
+          z-index: 1000; 
+          background: #ff6b35; 
+          color: white; 
+          border: none; 
+          padding: 12px 16px; 
+          border-radius: 25px; 
+          font-weight: bold; 
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          cursor: pointer;
+        `;
+        
+        installButton.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log('User choice:', outcome);
+            if (outcome === 'accepted') {
+              installButton.remove();
+            }
+            deferredPrompt = null;
+          }
+        });
+        
+        // Add install button after page loads
+        setTimeout(() => {
+          if (document.body && !window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.appendChild(installButton);
+          }
+        }, 3000);
+      });
+
+      // Hide install button if already installed
+      window.addEventListener('appinstalled', () => {
+        console.log('App was installed');
+        const installButton = document.querySelector('button[style*="Install App"]');
+        if (installButton) installButton.remove();
+      });
+
+      // Debug PWA installability
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          console.log('PWA Debug Info:');
+          console.log('- Service Worker supported:', 'serviceWorker' in navigator);
+          console.log('- Display mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser');
+          console.log('- HTTPS:', location.protocol === 'https:');
+          console.log('- Manifest linked:', document.querySelector('link[rel="manifest"]') !== null);
+          
+          // Check manifest
+          fetch('/manifest.json')
+            .then(response => response.json())
+            .then(manifest => {
+              console.log('- Manifest loaded:', !!manifest.name);
+              console.log('- Icons available:', manifest.icons && manifest.icons.length > 0);
+            })
+            .catch(e => console.log('- Manifest error:', e));
+            
+        }, 2000);
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

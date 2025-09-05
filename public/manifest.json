@@ -1,0 +1,133 @@
+{
+  "name": "Monastery360 - Sikkim Sacred Spheres",
+  "short_name": "Monastery360",
+  "description": "Explore 200+ monasteries in Sikkim through virtual tours, digital archives, and cultural experiences. Discover Buddhist heritage through immersive technology and offline access.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#ff6b35",
+  "orientation": "any",
+  "categories": ["travel", "education", "culture", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "id": "/",
+  "icons": [
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "72x72",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "96x96", 
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "128x128",
+      "type": "image/jpeg", 
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "144x144",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "152x152",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "384x384",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg", 
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/lovable-uploads/monastery-1.jpg",
+      "sizes": "512x512", 
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Virtual Tours",
+      "short_name": "Tours",
+      "description": "Explore monastery virtual tours",
+      "url": "/?tour=virtual",
+      "icons": [
+        {
+          "src": "/lovable-uploads/monastery-2.jpg",
+          "sizes": "96x96", 
+          "type": "image/jpeg"
+        }
+      ]
+    },
+    {
+      "name": "Interactive Map",
+      "short_name": "Map",
+      "description": "Browse monasteries on map",
+      "url": "/?view=map",
+      "icons": [
+        {
+          "src": "/lovable-uploads/monastery-3.jpg",
+          "sizes": "96x96",
+          "type": "image/jpeg" 
+        }
+      ]
+    },
+    {
+      "name": "Audio Guide",
+      "short_name": "Audio",
+      "description": "Listen to guided tours",
+      "url": "/?feature=audio",
+      "icons": [
+        {
+          "src": "/lovable-uploads/monastery-1.jpg",
+          "sizes": "96x96",
+          "type": "image/jpeg"
+        }
+      ]
+    },
+    {
+      "name": "Cultural Calendar",
+      "short_name": "Events",
+      "description": "View upcoming events",
+      "url": "/?section=calendar",
+      "icons": [
+        {
+          "src": "/lovable-uploads/monastery-2.jpg",
+          "sizes": "96x96",
+          "type": "image/jpeg"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
