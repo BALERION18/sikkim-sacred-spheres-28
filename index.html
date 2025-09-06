@@ -3,18 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GOMPIX - Digital Heritage Platform for Sikkim's Monasteries</title>
+    <title>Monastery360 - Digital Heritage Platform for Sikkim's Monasteries</title>
     <meta name="description" content="Explore 200+ monasteries in Sikkim through virtual tours, digital archives, and cultural experiences. Discover Buddhist heritage through immersive technology." />
-    <meta name="author" content="GOMPIX360" />
+    <meta name="author" content="Monastery360" />
     <meta name="keywords" content="Sikkim monasteries, Buddhist heritage, virtual tours, digital archives, cultural tourism, Himalayas" />
 
-    <meta property="og:title" content="GOMPIX360 - Digital Heritage Platform for Sikkim's Monasteries" />
+    <meta property="og:title" content="Monastery360 - Digital Heritage Platform for Sikkim's Monasteries" />
     <meta property="og:description" content="Explore 200+ monasteries in Sikkim through virtual tours, digital archives, and cultural experiences." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@GOMPIX360" />
+    <meta name="twitter:site" content="@monastery360" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
     <!-- PWA Manifest -->
@@ -22,14 +22,14 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GOMPIX360">
-    <link rel="apple-touch-icon" href="/lovable-uploads/GOMPIX-1.jpg">
+    <meta name="apple-mobile-web-app-title" content="Monastery360">
+    <link rel="apple-touch-icon" href="/lovable-uploads/monastery-1.jpg">
     <meta name="msapplication-TileColor" content="#1a1a2e">
     <meta name="theme-color" content="#ff6b35">
     
     <!-- Preload critical resources -->
     <link rel="preload" as="image" href="/src/assets/sikkim-monasteries-hero.jpg" fetchpriority="high">
-    <link rel="preload" as="image" href="/src/assets/GOMPIX-1.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/src/assets/monastery-1.jpg" fetchpriority="high">
     <link rel="preconnect" href="https://maps.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     
@@ -61,7 +61,7 @@
             });
         });
       }
-
+      
       // Enhanced PWA Install Prompt with debugging
       let deferredPrompt;
       
@@ -140,6 +140,37 @@
 
   <body>
     <div id="root"></div>
+    
+    <!-- Add Chatbase Embed Script Below -->
+    <script>
+      (function(){
+        if(!window.chatbase || window.chatbase("getState") !== "initialized"){
+          window.chatbase = (...arguments) => {
+            if(!window.chatbase.q){ window.chatbase.q = [] }
+            window.chatbase.q.push(arguments)
+          };
+          window.chatbase = new Proxy(window.chatbase, {
+            get(target, prop) {
+              if(prop === "q"){ return target.q }
+              return (...args) => target(prop, ...args)
+            }
+          });
+        }
+        const onLoad = function(){
+          const script = document.createElement("script");
+          script.src = "https://www.chatbase.co/embed.min.js";
+          script.id = "PJkzZ2ZmpIUzNKp6kJQ45";
+          script.domain = "www.chatbase.co";
+          document.body.appendChild(script);
+        };
+        if(document.readyState === "complete"){
+          onLoad();
+        } else {
+          window.addEventListener("load", onLoad);
+        }
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
