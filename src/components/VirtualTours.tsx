@@ -20,7 +20,7 @@ const virtualTours = [
     description: "Your custom virtual tour description here",
     highlights: ["360° Architecture", "Prayer Spaces", "Mountain Views"],
     difficulty: "Easy",
-    videoUrl: "/your-monastery-tour.mp4", // Your uploaded video
+    videoUrl: "/gonjang-tour..mp4", // Your uploaded video
     youtubeId: "X7tgD2W_cNs", // Keep as fallback
     title: "Your Custom Tour Title",
     useLocalVideo: true, // Flag to use local video instead of YouTube
