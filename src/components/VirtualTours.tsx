@@ -13,14 +13,14 @@ import virtualToursHero from "@/assets/virtual-tours-hero.jpg";
 const virtualTours = [
   {
     id: 1,
-    name: "Your Custom Tour", // Change this to your tour name
+    name: "Rumtek Monastery", // Change this to your tour name
     image: monasteryImage1, // Or import your custom image
     duration: "15 minutes",
     language: ["English", "Hindi", "Nepali"],
     description: "Your custom virtual tour description here",
-    highlights: ["Custom Feature 1", "Custom Feature 2", "Custom Feature 3"],
+    highlights: ["360° Architecture", "Prayer Spaces", "Mountain Views"],
     difficulty: "Easy",
-    videoUrl: "/videos/your-monastery-tour.mp4", // Your uploaded video
+    videoUrl: "/your-monastery-tour.mp4", // Your uploaded video
     youtubeId: "X7tgD2W_cNs", // Keep as fallback
     title: "Your Custom Tour Title",
     useLocalVideo: true, // Flag to use local video instead of YouTube
@@ -34,8 +34,10 @@ const virtualTours = [
     description: "Experience the 360° panoramic view of Gonjang Monastery near Gangtok with its stunning architecture.",
     highlights: ["360° Architecture", "Prayer Spaces", "Mountain Views"],
     difficulty: "Moderate",
+    videoUrl: "/gonjang-tour.mp4",
     youtubeId: "YcQ8uLZHjyE",
     title: "GONJANG MONASTERY 360° VIEW GANGTOK SIKKIM",
+    useLocalVideo: true
   },
   {
     id: 3,
@@ -46,8 +48,10 @@ const virtualTours = [
     description: "360-degree view of Ranka Monastery in Gangtok showcasing its traditional architecture and sacred spaces.",
     highlights: ["360° View", "Traditional Architecture", "Sacred Spaces"],
     difficulty: "Easy",
+    videoUrl: "/Ranka-tour.mp4",
     youtubeId: "pF8N2rk6yjI",
     title: "360 degree view of Ranka Monastery, Gangtok",
+    useLocalVideo: true
   },
 ];
 
