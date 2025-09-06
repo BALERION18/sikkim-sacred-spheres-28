@@ -34,7 +34,7 @@ const virtualTours = [
     description: "Experience the 360° panoramic view of Gonjang Monastery near Gangtok with its stunning architecture.",
     highlights: ["360° Architecture", "Prayer Spaces", "Mountain Views"],
     difficulty: "Moderate",
-    videoUrl: "/gonjang-tour.mp4",
+    videoUrl: "/your-monastery-tour.mp4",
     youtubeId: "YcQ8uLZHjyE",
     title: "GONJANG MONASTERY 360° VIEW GANGTOK SIKKIM",
     useLocalVideo: true
