@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bus, Calendar as CalendarIcon, Clock, MapPin, CreditCard, Users, Route, Hotel, Star, Wifi, Car } from "lucide-react";
+import { Bus, Calendar as CalendarIcon, Clock, MapPin, CreditCard, Users, Route, Hotel, Star, Wifi, Car, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +40,19 @@ interface Hotel {
   image_url?: string;
 }
 
+interface Guide {
+  id: string;
+  name: string;
+  specialization: string;
+  location: string;
+  rating: number;
+  price_per_day: number;
+  availability: string[];
+  languages: string[];
+  experience_years: number;
+  description: string;
+}
+
 interface BookingForm {
   passenger_name: string;
   passenger_email: string;
@@ -49,15 +62,19 @@ interface BookingForm {
   check_in_date?: Date | undefined;
   check_out_date?: Date | undefined;
   rooms_booked?: number;
+  guide_date?: Date | undefined;
+  guide_duration?: number;
 }
 
 export const BusScheduling = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [routes, setRoutes] = useState<BusRoute[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [guides, setGuides] = useState<Guide[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<BusRoute | null>(null);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
-  const [bookingType, setBookingType] = useState<'bus' | 'hotel'>('bus');
+  const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
+  const [bookingType, setBookingType] = useState<'bus' | 'hotel' | 'guide'>('bus');
   const [showBooking, setShowBooking] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -75,12 +92,15 @@ export const BusScheduling = () => {
     check_in_date: undefined,
     check_out_date: undefined,
     rooms_booked: 1,
+    guide_date: undefined,
+    guide_duration: 1,
   });
 
   useEffect(() => {
     // Use dummy data instead of fetching from database
     setRoutes(dummyRoutes);
     setHotels(dummyHotels);
+    setGuides(dummyGuides);
     setLoading(false);
   }, []);
 
@@ -181,6 +201,70 @@ export const BusScheduling = () => {
     }
   ];
 
+  // Dummy data for guides in Sikkim
+  const dummyGuides: Guide[] = [
+    {
+      id: '1',
+      name: 'Tenzin Norbu',
+      specialization: 'Buddhist Monasteries & Culture',
+      location: 'Gangtok',
+      rating: 4.9,
+      price_per_day: 3500,
+      availability: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      languages: ['English', 'Hindi', 'Nepali', 'Tibetan'],
+      experience_years: 12,
+      description: 'Expert in Buddhist history and monastery architecture with deep knowledge of Sikkim\'s spiritual heritage.'
+    },
+    {
+      id: '2',
+      name: 'Pemba Sherpa',
+      specialization: 'Adventure & Trekking',
+      location: 'Yuksom',
+      rating: 4.8,
+      price_per_day: 4200,
+      availability: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      languages: ['English', 'Hindi', 'Nepali'],
+      experience_years: 15,
+      description: 'Certified mountaineering guide specializing in high-altitude treks and monastery visits in remote areas.'
+    },
+    {
+      id: '3',
+      name: 'Lhamo Tshering',
+      specialization: 'Cultural Heritage & History',
+      location: 'Pelling',
+      rating: 4.7,
+      price_per_day: 3200,
+      availability: ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      languages: ['English', 'Hindi', 'Lepcha', 'Bhutia'],
+      experience_years: 10,
+      description: 'Local historian and cultural expert with extensive knowledge of Lepcha and Bhutia traditions.'
+    },
+    {
+      id: '4',
+      name: 'Karma Dorjee',
+      specialization: 'Photography & Monastery Tours',
+      location: 'Ravangla',
+      rating: 4.6,
+      price_per_day: 3800,
+      availability: ['Monday', 'Wednesday', 'Friday', 'Saturday', 'Sunday'],
+      languages: ['English', 'Hindi', 'Tibetan'],
+      experience_years: 8,
+      description: 'Professional photographer and guide specializing in capturing the spiritual essence of monasteries.'
+    },
+    {
+      id: '5',
+      name: 'Dawa Bhutia',
+      specialization: 'Meditation & Spiritual Tours',
+      location: 'Namchi',
+      rating: 4.5,
+      price_per_day: 2800,
+      availability: ['Monday', 'Tuesday', 'Thursday', 'Friday', 'Saturday'],
+      languages: ['English', 'Hindi', 'Bhutia'],
+      experience_years: 6,
+      description: 'Meditation practitioner and spiritual guide offering insights into Buddhist philosophy and practice.'
+    }
+  ];
+
   const fetchRoutes = async () => {
     // Simulate API call with dummy data
     setRoutes(dummyRoutes);
@@ -215,6 +299,20 @@ export const BusScheduling = () => {
     }
   };
 
+  const handleBookGuide = (guide: Guide) => {
+    setSelectedGuide(guide);
+    setBookingType('guide');
+    setShowBooking(true);
+    
+    // Pre-fill user email if logged in
+    if (user?.email) {
+      setBookingForm(prev => ({
+        ...prev,
+        passenger_email: user.email!,
+      }));
+    }
+  };
+
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -236,11 +334,20 @@ export const BusScheduling = () => {
         });
         return;
       }
-    } else {
+    } else if (bookingType === 'hotel') {
       if (!selectedHotel || !bookingForm.check_in_date || !bookingForm.check_out_date) {
         toast({
           title: "Missing Information",
           description: "Please select check-in and check-out dates",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      if (!selectedGuide || !bookingForm.guide_date) {
+        toast({
+          title: "Missing Information",
+          description: "Please select a guide date",
           variant: "destructive",
         });
         return;
@@ -270,7 +377,7 @@ export const BusScheduling = () => {
           email: bookingForm.passenger_email,
           phone: bookingForm.passenger_phone,
         };
-      } else if (selectedHotel) {
+      } else if (bookingType === 'hotel' && selectedHotel) {
         const nights = Math.ceil((bookingForm.check_out_date!.getTime() - bookingForm.check_in_date!.getTime()) / (1000 * 60 * 60 * 24));
         totalAmount = selectedHotel.price_per_night * nights * (bookingForm.rooms_booked || 1);
         bookingDetails = {
@@ -282,6 +389,19 @@ export const BusScheduling = () => {
           guests: bookingForm.rooms_booked || 1,
           rooms: bookingForm.rooms_booked || 1,
           nights: nights,
+          passengerName: bookingForm.passenger_name,
+          email: bookingForm.passenger_email,
+          phone: bookingForm.passenger_phone,
+        };
+      } else if (selectedGuide) {
+        totalAmount = selectedGuide.price_per_day * (bookingForm.guide_duration || 1);
+        bookingDetails = {
+          type: 'guide',
+          name: selectedGuide.name,
+          specialization: selectedGuide.specialization,
+          location: selectedGuide.location,
+          date: bookingForm.guide_date!.toISOString(),
+          duration: bookingForm.guide_duration || 1,
           passengerName: bookingForm.passenger_name,
           email: bookingForm.passenger_email,
           phone: bookingForm.passenger_phone,
@@ -322,6 +442,7 @@ export const BusScheduling = () => {
       setShowBooking(false);
       setSelectedRoute(null);
       setSelectedHotel(null);
+      setSelectedGuide(null);
       setBookingForm({
         passenger_name: '',
         passenger_email: user?.email || '',
@@ -331,6 +452,8 @@ export const BusScheduling = () => {
         check_in_date: undefined,
         check_out_date: undefined,
         rooms_booked: 1,
+        guide_date: undefined,
+        guide_duration: 1,
       });
 
     } catch (error) {
@@ -377,7 +500,9 @@ export const BusScheduling = () => {
         <Button variant="outline" className="text-foreground border-primary/20 hover:bg-primary/10">
           <Bus className="w-4 h-4 mr-1" />
           <span>/</span>
-          <Hotel className="w-4 h-4 ml-1" />
+          <Hotel className="w-4 h-4 mx-1" />
+          <span>/</span>
+          <User className="w-4 h-4 ml-1" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -386,7 +511,9 @@ export const BusScheduling = () => {
             <Bus className="w-5 h-5" />
             <span>/</span>
             <Hotel className="w-5 h-5" />
-            <span>Bus & Hotel Booking</span>
+            <span>/</span>
+            <User className="w-5 h-5" />
+            <span>Bus, Hotel & Guide Booking</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -414,6 +541,17 @@ export const BusScheduling = () => {
               >
                 <Hotel className="w-4 h-4 inline mr-2" />
                 Hotel Booking
+              </button>
+              <button
+                onClick={() => setBookingType('guide')}
+                className={`px-4 py-2 font-medium text-sm transition-colors ${
+                  bookingType === 'guide' 
+                    ? 'border-b-2 border-primary text-primary' 
+                    : 'text-foreground/70 hover:text-foreground'
+                }`}
+              >
+                <User className="w-4 h-4 inline mr-2" />
+                Guide Booking
               </button>
             </div>
 
@@ -479,7 +617,7 @@ export const BusScheduling = () => {
               ))}
             </div>
           </>
-        ) : (
+        ) : bookingType === 'hotel' ? (
           <>
             <div className="text-sm text-foreground/70 mb-4">
               Book hotels in Sikkim for your monastery visits and exploration
@@ -538,8 +676,76 @@ export const BusScheduling = () => {
               ))}
             </div>
           </>
+        ) : (
+          <>
+            <div className="text-sm text-foreground/70 mb-4">
+              Book expert guides to enhance your monastery visits and cultural exploration
+            </div>
+
+            <div className="grid gap-4">
+              {guides.map((guide) => (
+                <Card key={guide.id} className="hover:shadow-md transition-shadow bg-card/80 backdrop-blur-sm border-foreground/20">
+                  <CardContent className="p-4">
+                    <div className="grid md:grid-cols-4 gap-4 items-center">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">{guide.name}</h4>
+                        <div className="flex items-center text-sm text-foreground/70">
+                          <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
+                          {guide.rating} Rating
+                        </div>
+                        <div className="text-xs text-foreground/70">
+                          {guide.experience_years} years experience
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm text-foreground">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {guide.location}
+                        </div>
+                        <div className="text-xs text-foreground/70">
+                          {guide.specialization}
+                        </div>
+                        <div className="text-xs text-foreground/70">
+                          Languages: {guide.languages.slice(0, 2).join(', ')}
+                          {guide.languages.length > 2 && '...'}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="text-xs text-foreground/70">
+                          {guide.description.length > 80 
+                            ? `${guide.description.substring(0, 80)}...`
+                            : guide.description
+                          }
+                        </div>
+                        <div className="text-xs text-foreground/70">
+                          Available: {guide.availability.slice(0, 3).join(', ')}
+                          {guide.availability.length > 3 && '...'}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end space-y-2">
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-primary">₹{guide.price_per_day}</div>
+                          <div className="text-xs text-foreground/70">per day</div>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handleBookGuide(guide)}
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        >
+                          Book Now
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
-          </div>
+        </div>
         ) : (
           <div className="space-y-6">
             <div className="bg-muted/20 p-4 rounded-lg">
@@ -559,7 +765,7 @@ export const BusScheduling = () => {
                     </div>
                   </div>
                 </>
-              ) : (
+              ) : bookingType === 'hotel' ? (
                 <>
                   <h3 className="font-semibold text-foreground mb-2">
                     {selectedHotel?.name}
@@ -572,6 +778,22 @@ export const BusScheduling = () => {
                     <div>
                       <Star className="w-4 h-4 inline mr-2 fill-yellow-400 text-yellow-400" />
                       {selectedHotel?.rating} Rating - {selectedHotel?.room_type}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="font-semibold text-foreground mb-2">
+                    {selectedGuide?.name}
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm text-foreground/70">
+                    <div>
+                      <MapPin className="w-4 h-4 inline mr-2" />
+                      {selectedGuide?.location}
+                    </div>
+                    <div>
+                      <Star className="w-4 h-4 inline mr-2 fill-yellow-400 text-yellow-400" />
+                      {selectedGuide?.rating} Rating - {selectedGuide?.specialization}
                     </div>
                   </div>
                 </>
@@ -618,13 +840,13 @@ export const BusScheduling = () => {
 
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">
-                    {bookingType === 'bus' ? 'Number of Seats' : 'Number of Rooms'}
+                    {bookingType === 'bus' ? 'Number of Seats' : bookingType === 'hotel' ? 'Number of Rooms' : 'Duration (Days)'}
                   </label>
                   <Select
-                    value={bookingType === 'bus' ? bookingForm.seats_booked.toString() : (bookingForm.rooms_booked || 1).toString()}
+                    value={bookingType === 'bus' ? bookingForm.seats_booked.toString() : bookingType === 'hotel' ? (bookingForm.rooms_booked || 1).toString() : (bookingForm.guide_duration || 1).toString()}
                     onValueChange={(value) => setBookingForm(prev => ({ 
                       ...prev, 
-                      [bookingType === 'bus' ? 'seats_booked' : 'rooms_booked']: parseInt(value) 
+                      [bookingType === 'bus' ? 'seats_booked' : bookingType === 'hotel' ? 'rooms_booked' : 'guide_duration']: parseInt(value) 
                     }))}
                   >
                     <SelectTrigger className="bg-background text-foreground">
@@ -633,7 +855,7 @@ export const BusScheduling = () => {
                     <SelectContent>
                       {[1, 2, 3, 4, 5].map(num => (
                         <SelectItem key={num} value={num.toString()}>
-                          {num} {bookingType === 'bus' ? `seat${num > 1 ? 's' : ''}` : `room${num > 1 ? 's' : ''}`}
+                          {num} {bookingType === 'bus' ? `seat${num > 1 ? 's' : ''}` : bookingType === 'hotel' ? `room${num > 1 ? 's' : ''}` : `day${num > 1 ? 's' : ''}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -665,7 +887,7 @@ export const BusScheduling = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
-              ) : (
+              ) : bookingType === 'hotel' ? (
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">Check-in Date</label>
@@ -714,6 +936,30 @@ export const BusScheduling = () => {
                     </Popover>
                   </div>
                 </div>
+              ) : (
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Guide Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-background text-foreground border-foreground/20"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {bookingForm.guide_date ? format(bookingForm.guide_date, "PPP") : "Select guide date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={bookingForm.guide_date}
+                        onSelect={(date) => setBookingForm(prev => ({ ...prev, guide_date: date }))}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               )}
 
               {bookingType === 'bus' ? (
@@ -728,7 +974,7 @@ export const BusScheduling = () => {
                     </div>
                   </div>
                 )
-              ) : (
+              ) : bookingType === 'hotel' ? (
                 selectedHotel && bookingForm.rooms_booked && bookingForm.check_in_date && bookingForm.check_out_date && (
                   <div className="bg-primary/10 p-4 rounded-lg">
                     <div className="flex justify-between items-center text-foreground">
@@ -742,6 +988,20 @@ export const BusScheduling = () => {
                       {bookingForm.rooms_booked} room{(bookingForm.rooms_booked || 1) > 1 ? 's' : ''} × ₹{selectedHotel.price_per_night} × {
                         Math.ceil((bookingForm.check_out_date.getTime() - bookingForm.check_in_date.getTime()) / (1000 * 60 * 60 * 24))
                       } night{Math.ceil((bookingForm.check_out_date.getTime() - bookingForm.check_in_date.getTime()) / (1000 * 60 * 60 * 24)) > 1 ? 's' : ''}
+                    </div>
+                  </div>
+                )
+              ) : (
+                selectedGuide && bookingForm.guide_duration && (
+                  <div className="bg-primary/10 p-4 rounded-lg">
+                    <div className="flex justify-between items-center text-foreground">
+                      <span className="font-medium">Total Amount:</span>
+                      <span className="text-xl font-bold">
+                        ₹{selectedGuide.price_per_day * (bookingForm.guide_duration || 1)}
+                      </span>
+                    </div>
+                    <div className="text-sm text-foreground/70 mt-1">
+                      {bookingForm.guide_duration} day{(bookingForm.guide_duration || 1) > 1 ? 's' : ''} × ₹{selectedGuide.price_per_day}
                     </div>
                   </div>
                 )
@@ -762,10 +1022,11 @@ export const BusScheduling = () => {
                     setShowBooking(false);
                     setSelectedRoute(null);
                     setSelectedHotel(null);
+                    setSelectedGuide(null);
                   }}
                   className="flex-1 border-foreground/20 text-foreground hover:bg-foreground/10"
                 >
-                  {bookingType === 'bus' ? 'Back to Routes' : 'Back to Hotels'}
+                  {bookingType === 'bus' ? 'Back to Routes' : bookingType === 'hotel' ? 'Back to Hotels' : 'Back to Guides'}
                 </Button>
               </div>
             </form>
@@ -782,6 +1043,8 @@ export const BusScheduling = () => {
           : bookingType === 'hotel' && selectedHotel && bookingForm.check_in_date && bookingForm.check_out_date
           ? selectedHotel.price_per_night * (bookingForm.rooms_booked || 1) * 
             Math.ceil((bookingForm.check_out_date.getTime() - bookingForm.check_in_date.getTime()) / (1000 * 60 * 60 * 24))
+          : bookingType === 'guide' && selectedGuide
+          ? selectedGuide.price_per_day * (bookingForm.guide_duration || 1)
           : 0
         }
         bookingDetails={bookingType === 'bus' && selectedRoute ? {
@@ -790,6 +1053,9 @@ export const BusScheduling = () => {
         } : bookingType === 'hotel' && selectedHotel ? {
           type: 'hotel',
           name: selectedHotel.name,
+        } : bookingType === 'guide' && selectedGuide ? {
+          type: 'guide',
+          name: selectedGuide.name,
         } : { type: 'unknown', name: 'Unknown' }}
         onPaymentSuccess={handlePaymentSuccess}
       />
